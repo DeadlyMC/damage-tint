@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "me.deadlymc.damagetint.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+  ],
+  "client": [
+    "InGameHudMixin",
+    "ClientPlayNetworkHandlerMixin",
+    "ClientPlayerEntityMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
