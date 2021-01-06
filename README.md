@@ -1,8 +1,6 @@
 # Damage Tint
 Adds a red tint when the player takes damage.
 ![Damage Tint](/damage-tint.png)
-
-## About
 - The red vignette gradually darkens as the hp reduces.
 - The health threshold value (Decides from which hp onward the tint starts rendering) is stored in `damage_tint.json` in the `config` folder of your root mc directory.  
 - The health threshold is configurable using the `/tint` command.
