@@ -2,7 +2,7 @@ package me.deadlymc.damagetint;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 
 import java.io.*;
 
@@ -69,7 +69,7 @@ public class TintConfig
     
     public File getConfigDirectory()
     {
-        return new File(MinecraftClient.getInstance().runDirectory, "config");
+        return new File(Minecraft.getInstance().gameDir, "config");
     }
     
     public static TintConfig instance()

@@ -5,45 +5,45 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import me.deadlymc.damagetint.TintConfig;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.LiteralText;
-import net.minecraft.util.Formatting;
+import net.minecraft.command.CommandSource;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextFormatting;
 
-import static net.minecraft.server.command.CommandManager.argument;
-import static net.minecraft.server.command.CommandManager.literal;
-import static net.minecraft.command.CommandSource.suggestMatching;
+import static net.minecraft.command.Commands.argument;
+import static net.minecraft.command.Commands.literal;
+import static net.minecraft.command.ISuggestionProvider.suggest;
 
 public class TintCommand
 {
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher)
+    public static void register(CommandDispatcher<CommandSource> dispatcher)
     {
-        LiteralArgumentBuilder<ServerCommandSource> command = literal("tint").
+        LiteralArgumentBuilder<CommandSource> command = literal("tint").
                 executes(TintCommand::currentThreshold).
                 then(argument("health", IntegerArgumentType.integer(0, 20)).
-                        suggests((c, b) -> suggestMatching(new String[]{"0", "10", "20"}, b)).
+                        suggests((c, b) -> suggest(new String[]{"0", "10", "20"}, b)).
                         executes(c -> changeThreshold(IntegerArgumentType.getInteger(c, "health")))).
                 then(literal("reset").
                         executes(TintCommand::reset));
         dispatcher.register(command);
     }
     
-    private static int currentThreshold(CommandContext<ServerCommandSource> context)
+    private static int currentThreshold(CommandContext<CommandSource> context)
     {
-        ClientCommandManager.sendFeedback(new LiteralText(Formatting.GRAY + "Damage tint starts at " + Formatting.RED + "" + Formatting.BOLD + TintConfig.instance().getHealth() + " hp" + Formatting.GRAY + "."));
+        ClientCommandManager.sendFeedback(new StringTextComponent(TextFormatting.GRAY + "Damage tint starts at " + TextFormatting.RED + "" + TextFormatting.BOLD + TintConfig.instance().getHealth() + " hp" + TextFormatting.GRAY + "."));
         return 0;
     }
     
     private static int changeThreshold(Integer health)
     {
         TintConfig.instance().update(health);
-        ClientCommandManager.sendFeedback(new LiteralText(Formatting.GRAY + "Gradually tint screen at " + Formatting.RED + "" + Formatting.BOLD + (int)health + " hp" + Formatting.GRAY + "."));
+        ClientCommandManager.sendFeedback(new StringTextComponent(TextFormatting.GRAY + "Gradually tint screen at " + TextFormatting.RED + "" + TextFormatting.BOLD + (int)health + " hp" + TextFormatting.GRAY + "."));
         return 0;
     }
     
-    private static int reset(CommandContext<ServerCommandSource> context)
+    private static int reset(CommandContext<CommandSource> context)
     {
         TintConfig.instance().update(20);
-        ClientCommandManager.sendFeedback(new LiteralText(Formatting.GRAY + "Health threshold reset to " + Formatting.RED + "" + Formatting.BOLD + "20 hp" + Formatting.GRAY + "."));
+        ClientCommandManager.sendFeedback(new StringTextComponent(TextFormatting.GRAY + "Health threshold reset to " + TextFormatting.RED + "" + TextFormatting.BOLD + "20 hp" + TextFormatting.GRAY + "."));
         return 0;
     }
 }

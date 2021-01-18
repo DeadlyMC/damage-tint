@@ -2,60 +2,62 @@ package me.deadlymc.damagetint.commands;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.command.CommandException;
-import net.minecraft.text.*;
-import net.minecraft.util.Formatting;
+import net.minecraft.util.text.*;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.event.ClickEvent;
+import net.minecraft.util.text.event.HoverEvent;
 
 public class ClientCommandManager
 {
-    public static void sendError(Text error)
+    public static void sendError(ITextComponent error)
     {
-        sendFeedback(new LiteralText("").append(error).formatted(Formatting.RED));
+        sendFeedback(new StringTextComponent("").append(error).mergeStyle(TextFormatting.RED));
     }
     
-    public static void sendFeedback(Text message)
+    public static void sendFeedback(ITextComponent message)
     {
-        MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(message);
+        Minecraft.getInstance().ingameGUI.getChatGUI().printChatMessage(message);
     }
     
     // Credits: Earthcomputer (clientcommands)
     public static int executeCommand(StringReader reader, String command)
     {
-        ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        ClientPlayerEntity player = Minecraft.getInstance().player;
         try
         {
-            return player.networkHandler.getCommandDispatcher().execute(reader, player.getCommandSource());
+            return player.connection.getCommandDispatcher().execute(reader, player.getCommandSource());
         }
         catch (CommandException e)
         {
-            ClientCommandManager.sendError(e.getTextMessage());
+            ClientCommandManager.sendError(e.getComponent());
         }
         catch (CommandSyntaxException e)
         {
-            ClientCommandManager.sendError(Texts.toText(e.getRawMessage()));
+            ClientCommandManager.sendError(TextComponentUtils.toTextComponent(e.getRawMessage()));
             if (e.getInput() != null && e.getCursor() >= 0)
             {
                 int cursor = Math.min(e.getCursor(), e.getInput().length());
-                MutableText text = new LiteralText("").formatted(Formatting.GRAY).styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, command)));
+                IFormattableTextComponent text = new StringTextComponent("").mergeStyle(TextFormatting.GRAY).modifyStyle(style -> style.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, command)));
                 if (cursor > 10)
-                    text.append("...");
+                    text.appendString("...");
                 
-                text.append(e.getInput().substring(Math.max(0, cursor - 10), cursor));
+                text.appendString(e.getInput().substring(Math.max(0, cursor - 10), cursor));
                 if (cursor < e.getInput().length())
                 {
-                    text.append(new LiteralText(e.getInput().substring(cursor)).formatted(Formatting.RED, Formatting.UNDERLINE));
+                    text.append(new StringTextComponent(e.getInput().substring(cursor)).mergeStyle(TextFormatting.RED, TextFormatting.UNDERLINE));
                 }
                 
-                text.append(new TranslatableText("command.context.here").formatted(Formatting.RED, Formatting.ITALIC));
+                text.append(new TranslationTextComponent("command.context.here").mergeStyle(TextFormatting.RED, TextFormatting.ITALIC));
                 ClientCommandManager.sendError(text);
             }
         }
         catch (Exception e)
         {
-            LiteralText error = new LiteralText(e.getMessage() == null ? e.getClass().getName() : e.getMessage());
-            ClientCommandManager.sendError(new TranslatableText("command.failed").styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, error))));
+            StringTextComponent error = new StringTextComponent(e.getMessage() == null ? e.getClass().getName() : e.getMessage());
+            ClientCommandManager.sendError(new TranslationTextComponent("command.failed").modifyStyle(style -> style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, error))));
             e.printStackTrace();
         }
         return 1;

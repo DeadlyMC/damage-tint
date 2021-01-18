@@ -3,11 +3,12 @@
   "minVersion": "0.8",
   "package": "me.deadlymc.damagetint.mixin",
   "compatibilityLevel": "JAVA_8",
+  "refmap": "damagetint.refmap.json",
   "mixins": [
   ],
   "client": [
-    "InGameHudMixin",
-    "ClientPlayNetworkHandlerMixin",
+    "ForgeIngameGuiMixin",
+    "ClientPlayNetHandlerMixin",
     "ClientPlayerEntityMixin"
   ],
   "injectors": {

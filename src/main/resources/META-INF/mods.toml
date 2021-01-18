@@ -1,0 +1,17 @@
+modLoader="javafml"
+loaderVersion="[35,)"
+license="MIT License"
+
+issueTrackerURL="https://github.com/DeadlyMC/damage-tint/issues"
+
+[[mods]]
+modId="damagetint"
+version="${file.jarVersion}"
+displayName="Damage tint"
+displayURL="https://www.curseforge.com/minecraft/mc-mods/damage-tint"
+logoFile="icon.png"
+credits=""
+authors="DeadlyMC"
+description='''
+Adds a red tint on the player's screen when they're low on health.
+'''

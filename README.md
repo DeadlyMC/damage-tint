@@ -8,6 +8,6 @@ https://www.curseforge.com/minecraft/mc-mods/damage-tint
 
 ## Compiling
 - Clone this repo.
-- Run `gradlew genSources idea` for IntelliJ and `gradlew genSources eclipse` for Eclipse and import the Gradle project. (This is optional if you don't want to change the source code) 
+- Import this project in Intellij or Eclipse. The Gradle integration will handle the rest of the initial workspace setup. (This is optional if you don't want to change the source code) 
 - Run `gradlew build` for creating a build (result in `build/libs/`)  
   
