@@ -3,7 +3,6 @@ package me.deadlymc.damagetint;
 import com.mojang.brigadier.CommandDispatcher;
 import me.deadlymc.damagetint.commands.TintCommand;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.ExtensionPoint;
 import net.minecraftforge.fml.ModLoadingContext;
