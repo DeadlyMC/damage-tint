@@ -69,7 +69,9 @@ public class TintConfig
     
     public File getConfigDirectory()
     {
-        return new File(MinecraftClient.getInstance().runDirectory, "config");
+        File configDir = new File(MinecraftClient.getInstance().runDirectory, "config");
+        configDir.mkdir();
+        return configDir;
     }
     
     public static TintConfig instance()
