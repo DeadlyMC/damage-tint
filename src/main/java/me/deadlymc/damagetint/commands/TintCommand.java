@@ -29,21 +29,22 @@ public class TintCommand
     
     private static int currentThreshold(CommandContext<CommandSource> context)
     {
-        ClientCommandManager.sendFeedback(new StringTextComponent(TextFormatting.GRAY + "Damage tint starts at " + TextFormatting.RED + "" + TextFormatting.BOLD + TintConfig.instance().getHealth() + " hp" + TextFormatting.GRAY + "."));
+        int health = TintConfig.instance().getHealth();
+        ClientCommandManager.sendFeedback(new StringTextComponent(TextFormatting.GRAY + "Damage tint starts at " + TextFormatting.RED + "" + TextFormatting.BOLD + health + " hp" + " (" + (double) health / 2 + " hearts)" + TextFormatting.GRAY + "."));
         return 0;
     }
     
     private static int changeThreshold(Integer health)
     {
         TintConfig.instance().update(health);
-        ClientCommandManager.sendFeedback(new StringTextComponent(TextFormatting.GRAY + "Gradually tint screen at " + TextFormatting.RED + "" + TextFormatting.BOLD + (int)health + " hp" + TextFormatting.GRAY + "."));
+        ClientCommandManager.sendFeedback(new StringTextComponent(TextFormatting.GRAY + "Gradually tint screen at " + TextFormatting.RED + "" + TextFormatting.BOLD + health + " hp"+ " (" + (double) health / 2 + " hearts)" + TextFormatting.GRAY + "."));
         return 0;
     }
     
     private static int reset(CommandContext<CommandSource> context)
     {
         TintConfig.instance().update(20);
-        ClientCommandManager.sendFeedback(new StringTextComponent(TextFormatting.GRAY + "Health threshold reset to " + TextFormatting.RED + "" + TextFormatting.BOLD + "20 hp" + TextFormatting.GRAY + "."));
+        ClientCommandManager.sendFeedback(new StringTextComponent(TextFormatting.GRAY + "Health threshold reset to " + TextFormatting.RED + "" + TextFormatting.BOLD + "20 hp"+ " (" + 20 / 2 + " hearts)" + TextFormatting.GRAY + "."));
         return 0;
     }
 }
