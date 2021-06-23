@@ -9,6 +9,8 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.GameMode;
@@ -30,7 +32,8 @@ public abstract class InGameHudMixin
 	
 	@Shadow @Final private static Identifier VIGNETTE_TEXTURE;
 	
-	@Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/MathHelper;lerp(FFF)F"))
+	@Inject(method = "render", at = @At(value = "FIELD", ordinal = 0,
+			target = "Lnet/minecraft/client/MinecraftClient;interactionManager:Lnet/minecraft/client/network/ClientPlayerInteractionManager;"))
 	private void renderTint(MatrixStack matrices, float tickDelta, CallbackInfo ci)
 	{
 		ClientPlayerEntity player = this.client.player;
@@ -56,12 +59,13 @@ public abstract class InGameHudMixin
 			RenderSystem.disableDepthTest();
 			RenderSystem.depthMask(false);
 			RenderSystem.blendFuncSeparate(GlStateManager.SrcFactor.ZERO, GlStateManager.DstFactor.ONE_MINUS_SRC_COLOR, GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ZERO);
-			RenderSystem.color4f(0.1F, f, f, 1.0F);
-			
-			this.client.getTextureManager().bindTexture(VIGNETTE_TEXTURE);
+			RenderSystem.setShaderColor(0.1F, f, f, 1.0F);
+
+			RenderSystem.setShader(GameRenderer::getPositionTexShader);
+			RenderSystem.setShaderTexture(0, VIGNETTE_TEXTURE);
 			Tessellator tessellator = Tessellator.getInstance();
 			BufferBuilder bufferBuilder = tessellator.getBuffer();
-			bufferBuilder.begin(7, VertexFormats.POSITION_TEXTURE);
+			bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
 			bufferBuilder.vertex(0.0D, (double) this.scaledHeight, -90.0D).texture(0.0F, 1.0F).next();
 			bufferBuilder.vertex((double) this.scaledWidth, (double) this.scaledHeight, -90.0D).texture(1.0F, 1.0F).next();
 			bufferBuilder.vertex((double) this.scaledWidth, 0.0D, -90.0D).texture(1.0F, 0.0F).next();
@@ -69,7 +73,7 @@ public abstract class InGameHudMixin
 			tessellator.draw();
 			RenderSystem.depthMask(true);
 			RenderSystem.enableDepthTest();
-			RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+			RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 			RenderSystem.defaultBlendFunc();
 		}
 	}
