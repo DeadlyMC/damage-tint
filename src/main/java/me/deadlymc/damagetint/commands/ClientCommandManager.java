@@ -14,7 +14,7 @@ public class ClientCommandManager
 {
     public static void sendError(ITextComponent error)
     {
-        sendFeedback(new StringTextComponent("").append(error).mergeStyle(TextFormatting.RED));
+        sendFeedback(new StringTextComponent("").appendSibling(error).mergeStyle(TextFormatting.RED));
     }
     
     public static void sendFeedback(ITextComponent message)
@@ -47,10 +47,10 @@ public class ClientCommandManager
                 text.appendString(e.getInput().substring(Math.max(0, cursor - 10), cursor));
                 if (cursor < e.getInput().length())
                 {
-                    text.append(new StringTextComponent(e.getInput().substring(cursor)).mergeStyle(TextFormatting.RED, TextFormatting.UNDERLINE));
+                    text.appendSibling(new StringTextComponent(e.getInput().substring(cursor)).mergeStyle(TextFormatting.RED, TextFormatting.UNDERLINE));
                 }
                 
-                text.append(new TranslationTextComponent("command.context.here").mergeStyle(TextFormatting.RED, TextFormatting.ITALIC));
+                text.appendSibling(new TranslationTextComponent("command.context.here").mergeStyle(TextFormatting.RED, TextFormatting.ITALIC));
                 ClientCommandManager.sendError(text);
             }
         }
