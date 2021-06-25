@@ -45,7 +45,7 @@ public abstract class ForgeIngameGuiMixin extends IngameGui
 	private void renderDamageTint(ClientPlayerEntity player)
 	{
 		float health = player.getHealth();
-		float threshold = TintConfig.instance().getHealth();
+		float threshold = TintConfig.instance().isDynamic() ? player.getMaxHealth() : TintConfig.instance().getHealth();
 		if (health <= threshold)
 		{
 			float f = (threshold - health) / threshold + 1.0F / threshold * 2.0F;

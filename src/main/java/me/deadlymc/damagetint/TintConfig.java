@@ -1,8 +1,13 @@
 package me.deadlymc.damagetint;
 
+import com.google.common.base.Charsets;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
+import org.apache.commons.io.FileUtils;
 
 import java.io.*;
 
@@ -11,13 +16,16 @@ public class TintConfig
     private static TintConfig INSTANCE;
     private final File config = new File(getConfigDirectory(), "damage_tint.json");
     
-    private int health;
+    private Float health;
+    private Boolean dynamic;
     
     public void init()
     {
-        this.health = 20;
+        this.health = 20F;
+        this.dynamic = true;
         JsonObject object = new JsonObject();
         object.addProperty("health", this.health);
+        object.addProperty("dynamic", this.dynamic);
         try
         {
             BufferedWriter writer = new BufferedWriter(new FileWriter(getFile()));
@@ -30,21 +38,44 @@ public class TintConfig
         }
     }
     
-    public void update(Integer health)
+    public void update(Float health)
     {
-        JsonParser parser = new JsonParser();
         try
         {
-            Object obj = parser.parse(new FileReader(getFile()));
-            JsonObject json = (JsonObject) obj;
+            File jsonFile = getFile();
+            String jsonString = FileUtils.readFileToString(jsonFile, Charsets.UTF_8);
+            JsonElement jelement = new JsonParser().parse(jsonString);
+            JsonObject jobject = jelement.getAsJsonObject();
             if (health != null)
             {
-                json.addProperty("health", health);
-                FileWriter writer = new FileWriter(getFile());
-                writer.write(json.toString());
-                writer.close();
+                jobject.addProperty("health", health);
+                // Write the json to the file
+                String resultingJson = new Gson().toJson(jelement);
+                FileUtils.writeStringToFile(jsonFile, resultingJson, Charsets.UTF_8);
             }
-            this.setHealth(json.get("health").getAsInt());
+            this.health = jobject.get("health").getAsFloat();
+            this.dynamic = jobject.get("dynamic").getAsBoolean();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public void dynamic()
+    {
+        try
+        {
+            File jsonFile = getFile();
+            String jsonString = FileUtils.readFileToString(jsonFile, Charsets.UTF_8);
+            JsonElement jelement = new JsonParser().parse(jsonString);
+            JsonObject jobject = jelement.getAsJsonObject();
+            jobject.addProperty("dynamic", !this.dynamic);
+            // Write the json to the file
+            String resultingJson = new Gson().toJson(jelement);
+            FileUtils.writeStringToFile(jsonFile, resultingJson, Charsets.UTF_8);
+
+            this.dynamic = jobject.get("dynamic").getAsBoolean();
         }
         catch (IOException e)
         {
@@ -52,14 +83,19 @@ public class TintConfig
         }
     }
     
-    public int getHealth()
+    public Float getHealth()
     {
         return health;
     }
-    
-    public void setHealth(int health)
+
+    public Boolean isDynamic()
     {
-        this.health = health;
+        return this.dynamic;
+    }
+
+    public boolean needsUpdate()
+    {
+        return this.dynamic == null || this.health == null;
     }
     
     public File getFile()
