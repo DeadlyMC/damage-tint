@@ -16,7 +16,7 @@ public class DamageTint implements ClientModInitializer
         }
         else
         {
-            TintConfig.instance().update(null);
+            TintConfig.instance().update();
         }
     }
     
