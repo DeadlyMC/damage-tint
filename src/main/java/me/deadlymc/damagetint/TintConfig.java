@@ -1,65 +1,113 @@
 package me.deadlymc.damagetint;
 
+import com.google.common.base.Charsets;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraft.client.MinecraftClient;
+import org.apache.commons.io.FileUtils;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
 public class TintConfig
 {
     private static TintConfig INSTANCE;
     private final File config = new File(getConfigDirectory(), "damage_tint.json");
     
-    private int health;
+    private float health;
+    private boolean dynamic;
     
     public void init()
     {
-        this.health = 20;
+        this.health = 20F;
+        this.dynamic = true;
         JsonObject object = new JsonObject();
         object.addProperty("health", this.health);
-        try
-        {
+        object.addProperty("dynamic", this.dynamic);
+        try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(getFile()));
             writer.write(object.toString());
             writer.close();
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
-    
-    public void update(Integer health)
+
+    public void update()
     {
-        JsonParser parser = new JsonParser();
-        try
-        {
-            Object obj = parser.parse(new FileReader(getFile()));
-            JsonObject json = (JsonObject) obj;
-            if (health != null)
-            {
-                json.addProperty("health", health);
-                FileWriter writer = new FileWriter(getFile());
-                writer.write(json.toString());
-                writer.close();
+        try {
+            File jsonFile = getFile();
+            String jsonString = FileUtils.readFileToString(jsonFile, Charsets.UTF_8);
+            JsonElement jelement = new JsonParser().parse(jsonString);
+            JsonObject jobject = jelement.getAsJsonObject();
+            if (jobject.get("health") == null) {
+                jobject.addProperty("health", 20F);
+                this.health = 20F; // Update variable
             }
-            this.setHealth(json.get("health").getAsInt());
-        }
-        catch (IOException e)
-        {
+            if (jobject.get("dynamic") == null) {
+                jobject.addProperty("dynamic", true);
+                this.dynamic = true; // Update variable
+            }
+            this.health = jobject.get("health").getAsFloat();
+            this.dynamic = jobject.get("dynamic").getAsBoolean();
+
+            // Write the json to the file
+            String resultingJson = new Gson().toJson(jelement);
+            FileUtils.writeStringToFile(jsonFile, resultingJson, Charsets.UTF_8);
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
     
-    public int getHealth()
+    public void update(float health, boolean dynamic)
+    {
+        try {
+            File jsonFile = getFile();
+            String jsonString = FileUtils.readFileToString(jsonFile, Charsets.UTF_8);
+            JsonElement jelement = new JsonParser().parse(jsonString);
+            JsonObject jobject = jelement.getAsJsonObject();
+            jobject.addProperty("health", health);
+            jobject.addProperty("dynamic", dynamic);
+            // Write the json to the file
+            String resultingJson = new Gson().toJson(jelement);
+            FileUtils.writeStringToFile(jsonFile, resultingJson, Charsets.UTF_8);
+            // Update variables
+            this.health = health;
+            this.dynamic = dynamic;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void dynamic(boolean dynamic)
+    {
+        try {
+            File jsonFile = getFile();
+            String jsonString = FileUtils.readFileToString(jsonFile, Charsets.UTF_8);
+            JsonElement jelement = new JsonParser().parse(jsonString);
+            JsonObject jobject = jelement.getAsJsonObject();
+            jobject.addProperty("dynamic", dynamic);
+            // Write the json to the file
+            String resultingJson = new Gson().toJson(jelement);
+            FileUtils.writeStringToFile(jsonFile, resultingJson, Charsets.UTF_8);
+            this.dynamic = jobject.get("dynamic").getAsBoolean(); // Update variables
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public float getHealth()
     {
         return health;
     }
-    
-    public void setHealth(int health)
+
+    public boolean isDynamic()
     {
-        this.health = health;
+        return this.dynamic;
     }
     
     public File getFile()

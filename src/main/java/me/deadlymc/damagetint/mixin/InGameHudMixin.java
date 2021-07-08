@@ -30,7 +30,8 @@ public abstract class InGameHudMixin
 	
 	@Shadow @Final private static Identifier VIGNETTE_TEXTURE;
 	
-	@Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/MathHelper;lerp(FFF)F"))
+	@Inject(method = "render", at = @At(value = "FIELD", ordinal = 0,
+			target = "Lnet/minecraft/client/MinecraftClient;interactionManager:Lnet/minecraft/client/network/ClientPlayerInteractionManager;"))
 	private void renderTint(MatrixStack matrices, float tickDelta, CallbackInfo ci)
 	{
 		ClientPlayerEntity player = this.client.player;
@@ -49,7 +50,7 @@ public abstract class InGameHudMixin
 	private void renderDamageTint(ClientPlayerEntity player)
 	{
 		float health = player.getHealth();
-		float threshold = TintConfig.instance().getHealth();
+		float threshold = TintConfig.instance().isDynamic() ? player.getMaxHealth() : TintConfig.instance().getHealth();
 		if (health <= threshold)
 		{
 			float f = (threshold - health) / threshold + 1.0F / threshold * 2.0F;
