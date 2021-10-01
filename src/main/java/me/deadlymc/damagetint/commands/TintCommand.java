@@ -7,20 +7,20 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import me.deadlymc.damagetint.TintConfig;
-import net.minecraft.command.CommandSource;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.entity.player.Player;
 
-import static net.minecraft.command.Commands.argument;
-import static net.minecraft.command.Commands.literal;
-import static net.minecraft.command.ISuggestionProvider.suggest;
+import static net.minecraft.commands.Commands.argument;
+import static net.minecraft.commands.Commands.literal;
+import static net.minecraft.commands.SharedSuggestionProvider.suggest;
 
 public class TintCommand
 {
-    public static void register(CommandDispatcher<CommandSource> dispatcher)
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
-        LiteralArgumentBuilder<CommandSource> command = literal("tint").
+        LiteralArgumentBuilder<CommandSourceStack> command = literal("tint").
                 executes(TintCommand::status).
                 then(argument("health", FloatArgumentType.floatArg(0)).
                         suggests((c, b) -> suggest(new String[]{"0", "10", "20"}, b)).
@@ -34,33 +34,33 @@ public class TintCommand
         dispatcher.register(command);
     }
     
-    private static int status(CommandContext<CommandSource> context) throws CommandSyntaxException
+    private static int status(CommandContext<CommandSourceStack> context) throws CommandSyntaxException
     {
         boolean dynamic = TintConfig.instance().isDynamic();
-        float maxHealth = ((PlayerEntity) context.getSource().assertIsEntity()).getMaxHealth();
+        float maxHealth = ((Player) context.getSource().getEntityOrException()).getMaxHealth();
         float thresholdHealth = TintConfig.instance().getHealth();
-        ClientCommandManager.sendFeedback(new StringTextComponent(TextFormatting.GRAY + "Predefined health threshold = " + TextFormatting.RED + "" + TextFormatting.BOLD + thresholdHealth + " hp" + " (" + thresholdHealth / 2 + " hearts)" + TextFormatting.GRAY + "."));
+        ClientCommandManager.sendFeedback(new TextComponent(ChatFormatting.GRAY + "Predefined health threshold = " + ChatFormatting.RED + "" + ChatFormatting.BOLD + thresholdHealth + " hp" + " (" + thresholdHealth / 2 + " hearts)" + ChatFormatting.GRAY + "."));
         if (dynamic)
-            ClientCommandManager.sendFeedback(new StringTextComponent(TextFormatting.GRAY + "Current health threshold = " + TextFormatting.RED + "" + TextFormatting.BOLD + maxHealth + " hp" + " (" + maxHealth / 2 + " hearts)" + TextFormatting.GRAY + "."));
-        ClientCommandManager.sendFeedback(new StringTextComponent(dynamic ?
-                TextFormatting.GRAY + "Health threshold is updating dynamically! (Ignoring predefined value)" :
-                TextFormatting.GRAY + "Health threshold is not updating dynamically! (Using predefined value)"));
+            ClientCommandManager.sendFeedback(new TextComponent(ChatFormatting.GRAY + "Current health threshold = " + ChatFormatting.RED + "" + ChatFormatting.BOLD + maxHealth + " hp" + " (" + maxHealth / 2 + " hearts)" + ChatFormatting.GRAY + "."));
+        ClientCommandManager.sendFeedback(new TextComponent(dynamic ?
+                ChatFormatting.GRAY + "Health threshold is updating dynamically! (Ignoring predefined value)" :
+                ChatFormatting.GRAY + "Health threshold is not updating dynamically! (Using predefined value)"));
         return 0;
     }
     
     private static int changeThreshold(float health)
     {
         TintConfig.instance().update(health, false);
-        ClientCommandManager.sendFeedback(new StringTextComponent(TextFormatting.GRAY + "Gradually tint screen at " + TextFormatting.RED + "" + TextFormatting.BOLD + health + " hp"+ " (" + health / 2 + " hearts)" + TextFormatting.GRAY + "."));
+        ClientCommandManager.sendFeedback(new TextComponent(ChatFormatting.GRAY + "Gradually tint screen at " + ChatFormatting.RED + "" + ChatFormatting.BOLD + health + " hp"+ " (" + health / 2 + " hearts)" + ChatFormatting.GRAY + "."));
         return 0;
     }
 
-    private static int dynamic_status(CommandContext<CommandSource> context)
+    private static int dynamic_status(CommandContext<CommandSourceStack> context)
     {
         boolean dynamic = TintConfig.instance().isDynamic();
-        ClientCommandManager.sendFeedback(new StringTextComponent(dynamic ?
-                TextFormatting.GRAY + "Health threshold is updating dynamically! (Ignoring predefined value)" :
-                TextFormatting.GRAY + "Health threshold is not updating dynamically! (Using predefined value)"));
+        ClientCommandManager.sendFeedback(new TextComponent(dynamic ?
+                ChatFormatting.GRAY + "Health threshold is updating dynamically! (Ignoring predefined value)" :
+                ChatFormatting.GRAY + "Health threshold is not updating dynamically! (Using predefined value)"));
         return 0;
     }
     
@@ -69,19 +69,19 @@ public class TintCommand
         TintConfig.instance().dynamic(dynamic);
         String msg = "";
         if (TintConfig.instance().isDynamic()) {
-            msg = TextFormatting.GRAY + "Health threshold will update dynamically!";
+            msg = ChatFormatting.GRAY + "Health threshold will update dynamically!";
         } else {
             float health = TintConfig.instance().getHealth();
-            msg = TextFormatting.GRAY + "Health threshold will not update dynamically! Using predefined health threshold = " + TextFormatting.RED + "" + TextFormatting.BOLD + health + " hp"+ " (" + health / 2 + " hearts)" + TextFormatting.GRAY + ".";
+            msg = ChatFormatting.GRAY + "Health threshold will not update dynamically! Using predefined health threshold = " + ChatFormatting.RED + "" + ChatFormatting.BOLD + health + " hp"+ " (" + health / 2 + " hearts)" + ChatFormatting.GRAY + ".";
         }
-        ClientCommandManager.sendFeedback(new StringTextComponent(msg));
+        ClientCommandManager.sendFeedback(new TextComponent(msg));
         return 0;
     }
 
-    private static int reset(CommandContext<CommandSource> context)
+    private static int reset(CommandContext<CommandSourceStack> context)
     {
         TintConfig.instance().update(20F, true);
-        ClientCommandManager.sendFeedback(new StringTextComponent(TextFormatting.GRAY + "Reset all configs to default."));
+        ClientCommandManager.sendFeedback(new TextComponent(ChatFormatting.GRAY + "Reset all configs to default."));
         return 0;
     }
 }

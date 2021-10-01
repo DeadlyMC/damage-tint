@@ -114,7 +114,7 @@ public class TintConfig
     
     public File getConfigDirectory()
     {
-        File configDir = new File(Minecraft.getInstance().gameDir, "config");
+        File configDir = new File(Minecraft.getInstance().gameDirectory, "config");
         //noinspection ResultOfMethodCallIgnored
         configDir.mkdir();
         return configDir;

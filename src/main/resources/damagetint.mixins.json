@@ -8,8 +8,9 @@
   ],
   "client": [
     "ForgeIngameGuiMixin",
-    "ClientPlayNetHandlerMixin",
-    "ClientPlayerEntityMixin"
+    "ClientPacketListenerMixin",
+    "LocalPlayerMixin",
+    "GuiAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

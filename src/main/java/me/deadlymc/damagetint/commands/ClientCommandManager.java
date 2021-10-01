@@ -2,62 +2,66 @@ package me.deadlymc.damagetint.commands;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
-import net.minecraft.command.CommandException;
-import net.minecraft.util.text.*;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.event.ClickEvent;
-import net.minecraft.util.text.event.HoverEvent;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.commands.CommandRuntimeException;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentUtils;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 
 public class ClientCommandManager
 {
-    public static void sendError(ITextComponent error)
+    public static void sendError(Component error)
     {
-        sendFeedback(new StringTextComponent("").appendSibling(error).mergeStyle(TextFormatting.RED));
+        sendFeedback(new TextComponent("").append(error).withStyle(ChatFormatting.RED));
     }
     
-    public static void sendFeedback(ITextComponent message)
+    public static void sendFeedback(Component message)
     {
-        Minecraft.getInstance().ingameGUI.getChatGUI().printChatMessage(message);
+        Minecraft.getInstance().gui.getChat().addMessage(message);
     }
     
     // Credits: Earthcomputer (clientcommands)
     public static int executeCommand(StringReader reader, String command)
     {
-        ClientPlayerEntity player = Minecraft.getInstance().player;
+        LocalPlayer player = Minecraft.getInstance().player;
         try
         {
-            return player.connection.getCommandDispatcher().execute(reader, player.getCommandSource());
+            return player.connection.getCommands().execute(reader, player.createCommandSourceStack());
         }
-        catch (CommandException e)
+        catch (CommandRuntimeException e)
         {
             ClientCommandManager.sendError(e.getComponent());
         }
         catch (CommandSyntaxException e)
         {
-            ClientCommandManager.sendError(TextComponentUtils.toTextComponent(e.getRawMessage()));
+            ClientCommandManager.sendError(ComponentUtils.fromMessage(e.getRawMessage()));
             if (e.getInput() != null && e.getCursor() >= 0)
             {
                 int cursor = Math.min(e.getCursor(), e.getInput().length());
-                IFormattableTextComponent text = new StringTextComponent("").mergeStyle(TextFormatting.GRAY).modifyStyle(style -> style.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, command)));
+                MutableComponent text = new TextComponent("").withStyle(ChatFormatting.GRAY).withStyle(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, command)));
                 if (cursor > 10)
-                    text.appendString("...");
+                    text.append("...");
                 
-                text.appendString(e.getInput().substring(Math.max(0, cursor - 10), cursor));
+                text.append(e.getInput().substring(Math.max(0, cursor - 10), cursor));
                 if (cursor < e.getInput().length())
                 {
-                    text.appendSibling(new StringTextComponent(e.getInput().substring(cursor)).mergeStyle(TextFormatting.RED, TextFormatting.UNDERLINE));
+                    text.append(new TextComponent(e.getInput().substring(cursor)).withStyle(ChatFormatting.RED, ChatFormatting.UNDERLINE));
                 }
                 
-                text.appendSibling(new TranslationTextComponent("command.context.here").mergeStyle(TextFormatting.RED, TextFormatting.ITALIC));
+                text.append(new TranslatableComponent("command.context.here").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC));
                 ClientCommandManager.sendError(text);
             }
         }
         catch (Exception e)
         {
-            StringTextComponent error = new StringTextComponent(e.getMessage() == null ? e.getClass().getName() : e.getMessage());
-            ClientCommandManager.sendError(new TranslationTextComponent("command.failed").modifyStyle(style -> style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, error))));
+            TextComponent error = new TextComponent(e.getMessage() == null ? e.getClass().getName() : e.getMessage());
+            ClientCommandManager.sendError(new TranslatableComponent("command.failed").withStyle(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, error))));
             e.printStackTrace();
         }
         return 1;
